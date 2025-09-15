@@ -1,0 +1,139 @@
+import java.util.*;
+
+class Account {
+    private int accountNo;
+    private String name;
+    private double balance;
+    private int pin;
+    private List<String> transactions;
+
+    public Account(int accountNo, String name, int pin, double initialDeposit) {
+        this.accountNo = accountNo;
+        this.name = name;
+        this.pin = pin;
+        this.balance = initialDeposit;
+        this.transactions = new ArrayList<>();
+        addTransaction("Account created with balance: " + initialDeposit);
+    }
+
+    public boolean validatePin(int inputPin) {
+        return this.pin == inputPin;
+    }
+
+    public void deposit(double amount) {
+        balance += amount;
+        addTransaction("Deposited: " + amount);
+    }
+
+    public void withdraw(double amount) {
+        if (amount <= balance) {
+            balance -= amount;
+            addTransaction("Withdrawn: " + amount);
+        } else {
+            System.out.println("Insufficient balance!");
+        }
+    }
+
+    public double getBalance() {
+        return balance;
+    }
+
+    public void addTransaction(String details) {
+        transactions.add(details);
+    }
+
+    public void showTransactions() {
+        System.out.println("Transaction History:");
+        for (String t : transactions) {
+            System.out.println(t);
+        }
+    }
+}
+
+class Bank {
+    private HashMap<Integer, Account> accounts = new HashMap<>();
+    private int nextAccountNo = 1001;
+
+    public Account createAccount(String name, int pin, double initialDeposit) {
+        Account acc = new Account(nextAccountNo, name, pin, initialDeposit);
+        accounts.put(nextAccountNo, acc);
+        System.out.println("Account created! Your Account No: " + nextAccountNo);
+        nextAccountNo++;
+        return acc;
+    }
+
+    public Account login(int accountNo, int pin) {
+        Account acc = accounts.get(accountNo);
+        if (acc != null && acc.validatePin(pin)) {
+            return acc;
+        }
+        return null;
+    }
+}
+
+public class ATMApp {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        Bank bank = new Bank();
+
+        while (true) {
+            System.out.println("\n==== ATM Menu ====");
+            System.out.println("1. Create Account");
+            System.out.println("2. Login");
+            System.out.println("3. Exit");
+            System.out.print("Enter choice: ");
+            int choice = sc.nextInt();
+
+            if (choice == 1) {
+                System.out.print("Enter Name: ");
+                String name = sc.next();
+                System.out.print("Set PIN: ");
+                int pin = sc.nextInt();
+                System.out.print("Initial Deposit: ");
+                double deposit = sc.nextDouble();
+                bank.createAccount(name, pin, deposit);
+
+            } else if (choice == 2) {
+                System.out.print("Enter Account No: ");
+                int accNo = sc.nextInt();
+                System.out.print("Enter PIN: ");
+                int pin = sc.nextInt();
+                Account acc = bank.login(accNo, pin);
+
+                if (acc != null) {
+                    System.out.println("Login Successful!");
+                    while (true) {
+                        System.out.println("\n--- Account Menu ---");
+                        System.out.println("1. Deposit");
+                        System.out.println("2. Withdraw");
+                        System.out.println("3. Check Balance");
+                        System.out.println("4. Mini Statement");
+                        System.out.println("5. Logout");
+                        int ch = sc.nextInt();
+
+                        if (ch == 1) {
+                            System.out.print("Enter Amount: ");
+                            acc.deposit(sc.nextDouble());
+                        } else if (ch == 2) {
+                            System.out.print("Enter Amount: ");
+                            acc.withdraw(sc.nextDouble());
+                        } else if (ch == 3) {
+                            System.out.println("Balance: " + acc.getBalance());
+                        } else if (ch == 4) {
+                            acc.showTransactions();
+                        } else if (ch == 5) {
+                            break;
+                        }
+                    }
+                } else {
+                    System.out.println("Invalid account or PIN!");
+                }
+
+            } else if (choice == 3) {
+                System.out.println("Thank you for using ATM!");
+                break;
+            }
+        }
+        sc.close();
+    }
+}
